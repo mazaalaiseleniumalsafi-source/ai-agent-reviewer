@@ -79,6 +79,50 @@ app.delete('/todos/:id', (req, res) => {
   res.status(204).send();
 });
 
+// In-memory users store
+let users = [];
+let nextUserId = 1;
+
+// GET all users
+app.get('/users', (req, res) => {
+  res.json(users);
+});
+
+// GET a single user by id
+app.get('/users/:id', (req, res) => {
+  const user = users.find(u => u.id == req.params.id);
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+  res.json(user);
+});
+
+// POST create a new user
+app.post('/users', (req, res) => {
+  const { name, email } = req.body;
+  if (!name || !email) {
+    return res.status(400).json({ error: 'Name and email are required' });
+  }
+  const user = {
+    id: nextUserId++,
+    name,
+    email,
+    createdAt: new Date().toISOString()
+  };
+  users.push(user);
+  res.status(201).json(user);
+});
+
+// DELETE a user
+app.delete('/users/:id', (req, res) => {
+  const index = users.findIndex(u => u.id == req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+  users.splice(index, 1);
+  res.status(204).send();
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
